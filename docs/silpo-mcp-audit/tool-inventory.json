@@ -1,0 +1,629 @@
+{
+  "server": "silpo",
+  "mcpServerId": "125dfa4b-76e1-4cf1-9dce-8d022c8e43dc",
+  "connectionTransport": "http (streamable)",
+  "connectionEndpoint": "https://mcp.silpo.ua/mcp",
+  "auditDate": "2026-09-02",
+  "authenticatedAccount": {
+    "type": "consumer (B2C) loyalty account",
+    "profileId": "9c3870bd-ef03-439c-93c8-39e941a3e04e",
+    "note": "The session is authenticated as a single personal Сільпо loyalty account, not a company/B2B account. No company_id, employee_id, or org-membership object was observed anywhere in the schemas or live responses."
+  },
+  "toolCount": 40,
+  "resourceCount": 0,
+  "promptCount": 0,
+  "tools": [
+    {
+      "name": "silpo_get_my_profile",
+      "category": "Account",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "MEDIUM",
+      "notes": "Returns name, phone, email, birthday, gender, status of the single authenticated consumer. No company/role/department fields."
+    },
+    {
+      "name": "silpo_get_loyalty_info",
+      "category": "Account/Loyalty",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "LOW",
+      "notes": "Loyalty card + bonus balance for the individual. No corporate loyalty concept."
+    },
+    {
+      "name": "silpo_get_my_family",
+      "category": "Account",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "LOW",
+      "notes": "Household members/children/pets — a consumer personalization feature, not an org roster. Could NOT be repurposed to model 'employees'."
+    },
+    {
+      "name": "silpo_get_my_food_restrictions",
+      "category": "Account/Preferences",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "HIGH",
+      "notes": "Per-account dietary restrictions (vegan, gluten-free, lactose-free, etc). Directly relevant to employee meal-preference use case, but scoped to ONE account, not per-employee."
+    },
+    {
+      "name": "silpo_get_my_premium_subscription",
+      "category": "Account",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "LOW",
+      "notes": "Consumer 'Плюхс' subscription status/benefits."
+    },
+    {
+      "name": "silpo_get_my_delivery_addresses",
+      "category": "Delivery",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "MEDIUM",
+      "notes": "Saved personal addresses. Office address would have to be added/managed the same way a personal address is (no distinct 'office address' entity observed)."
+    },
+    {
+      "name": "silpo_find_address",
+      "category": "Delivery/Geo",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "address"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "HIGH",
+      "notes": "Geocodes free-text address -> lat/lon/city/street/house/district. Prerequisite for delivery setup."
+    },
+    {
+      "name": "silpo_get_available_delivery_types",
+      "category": "Delivery",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "latitude",
+        "longitude"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "CRITICAL",
+      "notes": "KEY FINDING: returns a delivery type literally named 'B2B' ('B2B delivery (business orders)') alongside DeliveryHome, NovaPoshta, SelfPickup, each resolved to a branchId for the queried coordinates. Confirms Silpo's backend has a B2B delivery channel reachable through this MCP, though no B2B-specific tools (company account, PO, invoice) were found beyond this delivery type."
+    },
+    {
+      "name": "silpo_list_branches",
+      "category": "Delivery/Stores",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [
+        "hasPickup",
+        "hasNP",
+        "limit",
+        "offset"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "HIGH",
+      "notes": "455 branches total nationwide; paginated 50/page. Needed to resolve branchId for SelfPickup/NovaPoshta."
+    },
+    {
+      "name": "silpo_get_time_slots",
+      "category": "Delivery",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId"
+      ],
+      "optionalInputs": [
+        "deliveryTypes",
+        "start",
+        "end",
+        "limit"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "HIGH",
+      "notes": "Delivery slot availability per branch; required before creating/updating a cart's timeslot."
+    },
+    {
+      "name": "silpo_find_nova_poshta_settlements",
+      "category": "Delivery/NovaPoshta",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "title"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "LOW",
+      "notes": "Not directly relevant to recurring office delivery, but usable as a fallback delivery channel."
+    },
+    {
+      "name": "silpo_find_nova_poshta_offices",
+      "category": "Delivery/NovaPoshta",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "settlementId"
+      ],
+      "optionalInputs": [
+        "title"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "LOW",
+      "notes": "Pairs with settlements tool."
+    },
+    {
+      "name": "silpo_get_categories",
+      "category": "Catalog",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId"
+      ],
+      "optionalInputs": [
+        "parentId",
+        "limit",
+        "offset"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "HIGH",
+      "notes": "Flat/paginated category listing per branch; supports drilling into subcategories via parentId."
+    },
+    {
+      "name": "silpo_get_categories_tree",
+      "category": "Catalog",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId",
+        "deliveryType",
+        "timeslotStart",
+        "timeslotEnd"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "HIGH",
+      "notes": "Live-validated: 28 top-level categories (fruits/veg, meat, fish, dairy, bakery, ready meals, health, snacks, coffee&tea, drinks, frozen, alcohol, home goods, hygiene, baby, pet). Full grocery+office-consumables assortment confirmed."
+    },
+    {
+      "name": "silpo_get_category",
+      "category": "Catalog",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId",
+        "deliveryType",
+        "categorySlug"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "MEDIUM",
+      "notes": "Category detail incl. visibility flag and price range."
+    },
+    {
+      "name": "silpo_get_popular_categories",
+      "category": "Catalog",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId",
+        "deliveryType"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "MEDIUM",
+      "notes": "Trending categories per branch."
+    },
+    {
+      "name": "silpo_get_products",
+      "category": "Catalog/Search",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId",
+        "deliveryType",
+        "timeslotStart",
+        "timeslotEnd"
+      ],
+      "optionalInputs": [
+        "category",
+        "mustHavePromotion",
+        "promotionCode",
+        "set",
+        "fromPrice",
+        "toPrice",
+        "inStock",
+        "sortBy",
+        "sortDirection",
+        "limit",
+        "offset"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "CRITICAL",
+      "notes": "Core catalogue browse tool; at least one filter (category/promotion/set) required. Supports price range, in-stock filter, sorting, pagination."
+    },
+    {
+      "name": "silpo_find_products_batch",
+      "category": "Catalog/Search",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId",
+        "deliveryType",
+        "timeslotStart",
+        "timeslotEnd",
+        "products"
+      ],
+      "optionalInputs": [
+        "limit"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "CRITICAL",
+      "notes": "Live-validated: multi-term search (up to 30 terms/call), also accepts exact numeric article codes (externalProductId) for precise reordering. This is the main bulk-basket-building primitive for a recurring office order (e.g. water+coffee+milk+snacks in one call)."
+    },
+    {
+      "name": "silpo_get_product_details",
+      "category": "Catalog",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId",
+        "slug",
+        "deliveryType",
+        "timeslotStart",
+        "timeslotEnd"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "HIGH",
+      "notes": "Full attributes/nutrition/images for one SKU. slug must come from a prior search result, cannot be guessed."
+    },
+    {
+      "name": "silpo_get_product_sets",
+      "category": "Catalog",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId"
+      ],
+      "optionalInputs": [
+        "deliveryType"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "MEDIUM",
+      "notes": "Curated collections (e.g. seasonal sets) — could inspire a 'starter office kit' bundle but is Silpo-curated, not something we can author."
+    },
+    {
+      "name": "silpo_get_similar_products",
+      "category": "Catalog/Recommendation",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId",
+        "slug"
+      ],
+      "optionalInputs": [
+        "deliveryType",
+        "limit",
+        "offset"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "MEDIUM",
+      "notes": "Alternative-product suggestion, e.g. swap coffee brand if out of stock."
+    },
+    {
+      "name": "silpo_get_replacements",
+      "category": "Catalog/Fulfilment risk",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId",
+        "companyId",
+        "productIds",
+        "deliveryType"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "MEDIUM",
+      "notes": "Flags picking/assembly risk (not just stock=0) and suggests substitutes — useful for a Procurement Agent to pre-empt failed office deliveries."
+    },
+    {
+      "name": "silpo_get_promotions",
+      "category": "Promotions",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId",
+        "deliveryType",
+        "timeslotStart",
+        "timeslotEnd"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "MEDIUM",
+      "notes": "Active promo codes usable as a filter in silpo_get_products — a Budget Agent could prefer promo'd SKUs to stretch budget."
+    },
+    {
+      "name": "silpo_get_promo_codes",
+      "category": "Promotions",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "LOW",
+      "notes": "Personal promo codes for the authenticated consumer."
+    },
+    {
+      "name": "silpo_get_my_coupons",
+      "category": "Loyalty/Promotions",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "LOW",
+      "notes": "Consumer coupon list; joins to offline-order rewards via promoId."
+    },
+    {
+      "name": "silpo_get_coupon_details",
+      "category": "Loyalty/Promotions",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "businessCouponId"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "LOW",
+      "notes": "Detail for one coupon id."
+    },
+    {
+      "name": "silpo_get_my_promos",
+      "category": "Loyalty/Promotions",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "LOW",
+      "notes": "Selectable personal promo offers."
+    },
+    {
+      "name": "silpo_get_my_certificates",
+      "category": "Payments",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [
+        "limit",
+        "offset"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "LOW",
+      "notes": "Gift certificates for the individual account; not a corporate payment instrument."
+    },
+    {
+      "name": "silpo_get_my_favorites",
+      "category": "Personalization",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId",
+        "deliveryType",
+        "timeslotStart"
+      ],
+      "optionalInputs": [
+        "limit",
+        "offset"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "MEDIUM",
+      "notes": "Could be repurposed as a proxy for a 'standard office basket' but is a single-account list, not a shared/office-level list."
+    },
+    {
+      "name": "silpo_get_my_shopping_cart",
+      "category": "Cart",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "CRITICAL",
+      "notes": "Entry point: returns shoppingCartId for the ONE cart tied to this account (exists boolean). Only one active cart per account was observed — no evidence of multiple concurrent/named carts."
+    },
+    {
+      "name": "silpo_get_shopping_cart_by_id",
+      "category": "Cart",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "shoppingCartId"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "CRITICAL",
+      "notes": "Full cart detail: products, delivery, calculation.total/totalAfterDiscounts, validations[] (errors/warnings incl. timeslot and payment-type gating), loyalty bonus fields. This is the closest thing to a pre-checkout 'order draft' object exposed by the MCP."
+    },
+    {
+      "name": "silpo_create_shopping_cart",
+      "category": "Cart",
+      "readOnly": false,
+      "transactionalRisk": "LOW",
+      "requiredInputs": [
+        "addressType",
+        "latitude",
+        "longitude",
+        "deliveryType",
+        "timeslot",
+        "branchId"
+      ],
+      "optionalInputs": [
+        "city",
+        "street",
+        "house",
+        "district"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "CRITICAL",
+      "notes": "Idempotent per user (returns existing cart if one exists) but is a write call. NOT executed during this audit (state-changing)."
+    },
+    {
+      "name": "silpo_add_or_update_cart_products",
+      "category": "Cart",
+      "readOnly": false,
+      "transactionalRisk": "MEDIUM",
+      "requiredInputs": [
+        "shoppingCartId",
+        "products[].productId",
+        "products[].companyId",
+        "products[].branchId",
+        "products[].quantity"
+      ],
+      "optionalInputs": [
+        "products[].addQuantity",
+        "products[].comment"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "CRITICAL",
+      "notes": "Does not itself validate stock; caller must re-fetch cart to see stock-exceeded errors in validations[]. NOT executed (write)."
+    },
+    {
+      "name": "silpo_remove_cart_products",
+      "category": "Cart",
+      "readOnly": false,
+      "transactionalRisk": "LOW",
+      "requiredInputs": [
+        "shoppingCartId",
+        "products[].productId"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "HIGH",
+      "notes": "NOT executed (write)."
+    },
+    {
+      "name": "silpo_clear_shopping_cart",
+      "category": "Cart",
+      "readOnly": false,
+      "transactionalRisk": "MEDIUM",
+      "requiredInputs": [
+        "shoppingCartId"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "MEDIUM",
+      "notes": "Destructive to cart contents (not to orders/account). NOT executed (write)."
+    },
+    {
+      "name": "silpo_update_shopping_cart",
+      "category": "Cart/Delivery/Payments",
+      "readOnly": false,
+      "transactionalRisk": "MEDIUM",
+      "requiredInputs": [
+        "shoppingCartId",
+        "deliveryType",
+        "timeslot",
+        "address",
+        "shipments"
+      ],
+      "optionalInputs": [
+        "branchId",
+        "promoCode",
+        "bonusRequested",
+        "feedbackChanges",
+        "feedbackContacts",
+        "isAdultConfirmed"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "HIGH",
+      "notes": "Also applies promo codes and requests loyalty-bonus payment against the cart (bonusRequested) — i.e. this single tool has a minor financial side effect (bonus allocation), not just delivery config. NOT executed (write)."
+    },
+    {
+      "name": "silpo_add_or_update_certificates",
+      "category": "Cart/Payments",
+      "readOnly": false,
+      "transactionalRisk": "MEDIUM",
+      "requiredInputs": [
+        "shoppingCartId"
+      ],
+      "optionalInputs": [
+        "certificatesToAdd",
+        "certificatesToRemove"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "LOW",
+      "notes": "Applies/removes gift-certificate value against the cart total — financial side effect. NOT executed (write)."
+    },
+    {
+      "name": "silpo_add_or_update_favorite_products",
+      "category": "Personalization",
+      "readOnly": false,
+      "transactionalRisk": "LOW",
+      "requiredInputs": [
+        "actions[].productId",
+        "actions[].externalProductId",
+        "actions[].toDelete"
+      ],
+      "optionalInputs": [],
+      "authRequired": true,
+      "b2bUsefulness": "LOW",
+      "notes": "Max 5 actions/call. NOT executed (write)."
+    },
+    {
+      "name": "silpo_get_my_online_orders",
+      "category": "Order history",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [],
+      "optionalInputs": [
+        "limit",
+        "offset"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "HIGH",
+      "notes": "Live-validated: 1 historical online order returned with full line items, prices, delivery slot, status='received'. This is the closest thing to consumption-history data the MCP exposes — but only for THIS single account, no per-employee/per-office breakdown, and status vocabulary beyond 'received' is unconfirmed (only one sample order observed)."
+    },
+    {
+      "name": "silpo_get_my_offline_orders",
+      "category": "Order history",
+      "readOnly": true,
+      "transactionalRisk": "NONE",
+      "requiredInputs": [
+        "branchId",
+        "deliveryType",
+        "timeslotStart",
+        "timeslotEnd"
+      ],
+      "optionalInputs": [
+        "dateStart",
+        "dateEnd",
+        "limit (max 10)",
+        "offset"
+      ],
+      "authRequired": true,
+      "b2bUsefulness": "MEDIUM",
+      "notes": "In-store purchase history via loyalty card. lagerId can be used as a precise re-order key via silpo_find_products_batch."
+    }
+  ],
+  "resources": "Not exposed by this MCP server (no MCP resources or resource templates were discoverable via the connected client).",
+  "prompts": "Not exposed by this MCP server (no MCP prompt primitives were discoverable via the connected client).",
+  "serverLevelInstructions": "No standalone server-level instructions/metadata document was discoverable beyond individual tool descriptions and the per-tool 'MANDATORY next step' guidance embedded in several tool descriptions (e.g. always re-fetch cart after a cart write).",
+  "keyFinding_B2B_deliveryType": "silpo_get_available_delivery_types returned a delivery type literally named 'B2B' ('B2B delivery (business orders)') with its own resolvable branchId for a Kyiv coordinate — confirming Silpo's backend supports a business delivery channel, reachable through the same generic cart/delivery tools. No B2B-specific company-account, multi-user, PO, invoice, or budget tools were found alongside it."
+}

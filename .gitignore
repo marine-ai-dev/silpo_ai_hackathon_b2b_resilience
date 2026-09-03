@@ -1,0 +1,24 @@
+node_modules/
+
+# Local JSON "database" and Silpo OAuth secrets — never commit these.
+data/db.json
+data/silpo-oauth.json
+data/silpo-oauth-client.json
+data/*.json
+
+# Test-run temp DB artifacts (isolated per-test-file fixtures, regenerated
+# on every `npm test` run — see test/*.test.js's own SILPO_DB_FILE/temp-file
+# isolation comments for why these exist at all).
+test/.tmp-*.json
+test/**/.tmp-*.json
+
+# Generic env files, in case any get created locally later.
+.env
+.env.*
+!.env.example
+
+*.log
+.DS_Store
+
+# Personal/local Claude Code settings — not meant to be shared.
+.claude/settings.local.json

@@ -1,0 +1,20 @@
+{
+  "name": "silpo-office-procurement-mvp",
+  "version": "0.1.0",
+  "description": "AI-powered B2B office-supply procurement MVP on top of the Silpo MCP server",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "seed": "node scripts/seed.js",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.17"
+  }
+}

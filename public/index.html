@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Silpo Office Procurement — MVP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand-block">
+      <div class="brand-logo" id="brandLogo">M</div>
+      <div class="brand-text">
+        <span class="brand-name" id="brandName">MarineAI</span>
+        <span class="brand-sub">AI Office Procurement — Kyiv HQ</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button type="button" class="a11y-toggle" id="a11yToggle" aria-pressed="false" title="Toggle high-contrast, large-text accessibility mode">
+        <span class="a11y-switch" aria-hidden="true"></span>
+        <span>Accessibility mode</span>
+      </button>
+      <span class="mode-badge" id="modeBadge">SILPO_MODE=...</span>
+      <div class="silpo-connect" id="silpoConnect">
+        <span id="silpoStatusDot" class="silpo-dot">○</span>
+        <span id="silpoStatusText">Not connected</span>
+        <button id="silpoConnectBtn" class="btn-small">Connect Silpo</button>
+        <button id="silpoDisconnectBtn" class="btn-small" hidden>Disconnect</button>
+      </div>
+    </div>
+  </header>
+  <div id="silpoToast" class="silpo-toast" hidden></div>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="dashboard" class="active">Dashboard</button>
+    <button data-tab="resilience">Resilience</button>
+    <button data-tab="office-setup">Office Setup</button>
+    <button data-tab="recurring-supplies">Recurring Supplies</button>
+    <button data-tab="weekly-run">Weekly Run</button>
+    <button data-tab="readiness">Emergency Readiness</button>
+    <button data-tab="forecast">AI Forecast</button>
+    <button data-tab="proposal">Proposal</button>
+    <button data-tab="budget">Budget Optimization</button>
+    <button data-tab="approval">Approval</button>
+    <button data-tab="cart">Silpo Cart Handoff</button>
+    <button data-tab="history">History</button>
+    <button data-tab="theme">Theme</button>
+  </nav>
+
+  <main>
+    <section class="screen active" id="screen-dashboard">
+      <div class="card">
+        <h2>Dashboard</h2>
+        <div class="grid" id="dashboardStats"></div>
+      </div>
+      <div class="card">
+        <h2>Consumption alerts</h2>
+        <div id="dashboardAlerts"></div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-resilience">
+      <div class="card">
+        <h2>Resilience Plan</h2>
+        <div class="form-row">
+          <label>Office</label>
+          <select id="resilienceOfficeSelect"></select>
+          <button class="secondary" id="refreshResilienceBtn">Refresh</button>
+        </div>
+        <p class="rationale">Composes power status + emergency readiness shortfall + risk classification + delivery-branch context + ESG stats into one read-mostly plan. Viewing this NEVER triggers procurement or touches a Silpo cart — use the Emergency Readiness tab's "Resolve shortfalls into a proposal" to actually act on a recommendation.</p>
+        <div id="resilienceRiskBanner" class="empty">Loading…</div>
+      </div>
+
+      <div class="card">
+        <h2>Power Status</h2>
+        <div class="grid" id="powerStatusStats"></div>
+        <div id="powerStatusDetail" class="rationale" style="margin-top:8px"></div>
+        <h3 style="margin-top:16px">Enter / update manual power schedule</h3>
+        <p class="rationale">Once you save a manual schedule, it becomes the active source for this office, overriding demo data automatically — this is real operational data (human-entered), never a live DTEK feed.</p>
+        <div class="form-row">
+          <label>Outage start</label>
+          <input id="powerScheduleStart" type="datetime-local" />
+          <label>Outage end</label>
+          <input id="powerScheduleEnd" type="datetime-local" />
+        </div>
+        <div class="form-row">
+          <input id="powerScheduleNote" placeholder="Source note (e.g. 'DTEK Telegram bot screenshot 14:00')" style="flex:1;min-width:220px" />
+          <button class="primary" id="savePowerScheduleBtn">Save manual schedule</button>
+        </div>
+        <div id="powerScheduleSaveStatus" class="rationale" style="margin-top:6px"></div>
+      </div>
+
+      <div class="card">
+        <h2>Impact Summary</h2>
+        <div class="grid" id="resilienceMetrics"></div>
+        <p class="rationale" id="resilienceMetricsNote" style="margin-top:8px"></p>
+      </div>
+
+      <div class="card">
+        <h2>AI Recommendation</h2>
+        <div id="resilienceRecommendation"></div>
+        <h3 style="margin-top:14px">Why (reasoning)</h3>
+        <ul class="notes-list" id="resilienceReasons"></ul>
+      </div>
+
+      <div class="card">
+        <h2>Emergency Readiness</h2>
+        <table id="resiliencReadinessTable">
+          <thead><tr><th>Item</th><th>Target</th><th>Current</th><th>Shortfall</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div id="resilienceProcurementNote" class="rationale" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card">
+        <h2>Delivery Recommendation</h2>
+        <div id="resilienceTiming" class="rationale">—</div>
+      </div>
+
+      <div class="card">
+        <h2>Branch Resilience <span id="resilienceLogisticsSourceBadge"></span></h2>
+        <div id="resilienceLogistics" class="rationale">—</div>
+      </div>
+
+      <div class="card">
+        <h2>ESG — Battery Recycling</h2>
+        <div class="grid" id="resilienceEsgStats"></div>
+        <p class="rationale">Only real seeded/logged counts — no fabricated CO2 or environmental-impact figures. Log new drop-offs from the Office Setup tab.</p>
+      </div>
+
+      <div class="card">
+        <h2>Provenance</h2>
+        <table id="resilienceProvenanceTable">
+          <thead><tr><th>Section</th><th>Source</th><th>Confidence</th><th>Notes</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-office-setup">
+      <div class="card">
+        <h2>Office Setup</h2>
+        <div id="officeSetup"></div>
+      </div>
+      <div class="card">
+        <h2>Blackout-aware delivery routing</h2>
+        <p class="rationale">
+          A <strong>manual toggle</strong>, not an automated feed — there is no live blackout-schedule
+          API integration in this version. When active, delivery routing prefers a Silpo branch known
+          to run on a generator (a manually-refreshed snapshot of
+          <code class="small">silpo.ua/de-pracyuiemo-na-generatorax</code>), if one is on record for this
+          office's city — with graceful fallback to normal branch selection otherwise.
+        </p>
+        <div class="form-row">
+          <label>Mark blackout active in our area</label>
+          <button type="button" class="btn-small" id="blackoutToggleBtn" aria-pressed="false">Blackout: OFF</button>
+          <input id="blackoutSetBy" placeholder="Your name" value="Офіс-менеджер Марина" style="min-width:160px" />
+        </div>
+        <div id="blackoutStatusInfo" class="rationale" style="margin-top:8px"></div>
+        <h3 style="margin-top:16px">Current delivery branch</h3>
+        <div id="branchPreview" class="rationale">Loading…</div>
+      </div>
+      <div class="card">
+        <h2>Battery recycling (Silpo eco program)</h2>
+        <p class="rationale">
+          Ties into Silpo's real <strong>«Батарейки, здавайтеся!»</strong> program
+          (<code class="small">batareiky.ua</code>) — 247 Silpo stores collect used batteries
+          in-store (up to 50/visit), partnered with a European recycling plant. For larger office
+          collections, the project's own contact is 099-311-67-96 / 097-168-55-76. There is no API
+          for this — log a count here after each drop-off; it's a manual record, not a live feed.
+        </p>
+        <div class="grid" id="recyclingStats"></div>
+        <div class="form-row" style="margin-top:12px">
+          <label>Batteries dropped off</label>
+          <input id="recyclingQty" type="number" min="1" value="10" style="width:90px" />
+          <input id="recyclingNote" placeholder="Note (optional)" style="flex:1;min-width:180px" />
+          <button class="secondary" id="submitRecycling">Log recycling drop-off</button>
+        </div>
+        <table id="recyclingTable">
+          <thead><tr><th>Date</th><th>Batteries</th><th>Logged by</th><th>Note</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-recurring-supplies">
+      <div class="card">
+        <h2>Recurring Supply Plan</h2>
+        <table id="supplyPlanTable"><thead><tr><th>Item</th><th>Category</th><th>Unit</th><th>Silpo search term</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="card">
+        <h3>Add feedback</h3>
+        <div class="form-row">
+          <label>Item</label>
+          <select id="fbProductKey"></select>
+          <label>Signal</label>
+          <select id="fbSignal">
+            <option value="NOT_ENOUGH">NOT_ENOUGH</option>
+            <option value="JUST_RIGHT">JUST_RIGHT</option>
+            <option value="TOO_MUCH">TOO_MUCH</option>
+          </select>
+          <input id="fbNote" placeholder="Note (optional)" style="flex:1;min-width:180px" />
+          <button class="secondary" id="submitFeedback">Add feedback</button>
+        </div>
+        <table id="feedbackTable"><thead><tr><th>Week</th><th>Item</th><th>Signal</th><th>Note</th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-weekly-run">
+      <div class="card">
+        <h2>Generate This Week's Plan</h2>
+        <div class="pill-steps" id="runSteps">
+          <span>DRAFT</span><span>FORECASTING</span><span>SOURCING</span><span>OPTIMIZING</span>
+          <span>READY_FOR_APPROVAL</span><span>APPROVED</span><span>CART_PREPARED</span>
+        </div>
+        <div class="form-row">
+          <label>Week of</label>
+          <input id="weekOfInput" type="date" />
+          <label>Expected attendance</label>
+          <input id="attendanceInput" type="number" value="28" style="width:80px" />
+          <button class="primary" id="runPipelineBtn">Run Demand → Procurement → Budget pipeline</button>
+        </div>
+        <div id="runStatus" class="empty">No run yet. Configure and click run.</div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-readiness">
+      <div class="card">
+        <h2>Emergency Readiness</h2>
+        <p class="rationale">Power-outage readiness stock (batteries, LED lighting, candles, extension cords) — grounded in what Silpo actually sells, confirmed via live catalog search. This is NOT a weekly consumption forecast: nobody "uses up" batteries on a schedule. Instead it's a straightforward <strong>target stock level vs. most recently known current stock</strong> gap calculation (see <code class="small">src/agents/readinessAgent.js</code>).</p>
+        <table id="readinessTable">
+          <thead><tr><th>Item</th><th>Target</th><th>Last known stock</th><th>Shortfall</th><th>Last checked</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Enter a stock check</h3>
+        <div class="form-row">
+          <label>Item</label>
+          <select id="stockCheckItem"></select>
+          <label>Currently on hand</label>
+          <input id="stockCheckQty" type="number" min="0" value="0" style="width:90px" />
+          <input id="stockCheckNote" placeholder="Note (optional)" style="flex:1;min-width:180px" />
+          <button class="secondary" id="submitStockCheck">Record stock check</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Resolve shortfalls into a proposal</h3>
+        <p class="rationale">Reuses the same ProcurementAgent → BudgetPolicyAgent → Approval → Silpo Cart Handoff pipeline as the weekly restock — just with target-stock-gap quantities instead of a consumption forecast, and tagged as a <code class="small">readiness-topup</code> proposal.</p>
+        <button class="primary" id="runReadinessBtn">Resolve shortfalls into a proposal</button>
+        <div id="readinessRunStatus" class="empty" style="margin-top:10px">No readiness run yet.</div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-forecast">
+      <div class="card">
+        <h2>AI Forecast Reasoning (DemandAgent)</h2>
+        <table id="forecastTable">
+          <thead><tr><th>Item</th><th>Previous</th><th>Forecast</th><th>Δ</th><th>Rationale</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-proposal">
+      <div class="card">
+        <h2>Procurement Proposal</h2>
+        <div id="proposalSummary" class="grid"></div>
+        <table id="proposalTable">
+          <thead><tr><th>Item</th><th>Previous → Recommended</th><th>Unit price</th><th>Line total</th><th>Promo</th><th>Source</th><th>Reason</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-budget">
+      <div class="card">
+        <h2>Budget Optimization (BudgetPolicyAgent)</h2>
+        <div class="grid" id="budgetStats"></div>
+        <h3>Adjustments made</h3>
+        <ul class="notes-list" id="budgetNotes"></ul>
+        <h3>Full audit trail</h3>
+        <table id="historyTable"><thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Detail</th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-approval">
+      <div class="card">
+        <h2>Approval</h2>
+        <div id="approvalStatus" class="empty">No proposal ready yet.</div>
+        <div class="form-row" id="approvalForm" style="display:none">
+          <label>Approver</label>
+          <input id="approverName" value="Офіс-менеджер Марина" />
+          <input id="approverComment" placeholder="Comment (optional)" style="flex:1;min-width:180px" />
+          <button class="primary" id="approveBtn">Approve</button>
+          <button class="danger" id="rejectBtn">Reject</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-cart">
+      <div class="card">
+        <h2>Silpo Cart Handoff</h2>
+        <p class="rationale">This system prepares a real Silpo cart via <code class="small">silpo_add_or_update_cart_products</code> — it never places, pays for, or cancels an order. Checkout is a manual human step in the Silpo app/site.</p>
+        <button class="primary" id="prepareCartBtn" disabled>Prepare Silpo Cart</button>
+        <div id="cartResult" style="margin-top:14px"></div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-history">
+      <div class="card">
+        <h2>Procurement History</h2>
+        <table id="historyRunsTable">
+          <thead><tr><th>Week</th><th>Status</th><th>Total est.</th><th>Within budget</th><th>Started</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="screen" id="screen-theme">
+      <div class="card">
+        <h2>Company Theme &amp; Branding</h2>
+        <p class="rationale">Re-skin this dashboard for your company — no code changes. Changes apply instantly and persist for every visitor.</p>
+        <div class="theme-form">
+          <div>
+            <div class="theme-field">
+              <label>Company name</label>
+              <input type="text" id="themeCompanyName" placeholder="e.g. MarineAI" />
+            </div>
+            <div class="theme-field">
+              <label>Logo URL (optional)</label>
+              <input type="url" id="themeLogoUrl" placeholder="https://…/logo.png (leave empty for initials badge)" />
+            </div>
+            <div class="theme-field">
+              <label>Accent color</label>
+              <div class="color-row">
+                <input type="color" id="themeAccent" value="#7c5cff" />
+                <span id="themeAccentHex" class="rationale">#7c5cff</span>
+              </div>
+              <div class="swatches" id="accentSwatches"></div>
+            </div>
+            <div class="theme-field">
+              <label>Secondary accent color</label>
+              <div class="color-row">
+                <input type="color" id="themeAccent2" value="#22d3ee" />
+                <span id="themeAccent2Hex" class="rationale">#22d3ee</span>
+              </div>
+              <div class="swatches" id="accent2Swatches"></div>
+            </div>
+            <button class="primary" id="saveThemeBtn">Save theme</button>
+            <span id="themeSaveStatus" class="rationale" style="margin-left:10px"></span>
+          </div>
+          <div>
+            <h3>Live preview</h3>
+            <div class="theme-preview">
+              <div class="brand-block" style="margin-bottom:16px">
+                <div class="brand-logo" id="previewLogo">M</div>
+                <div class="brand-text">
+                  <span class="brand-name" id="previewName">MarineAI</span>
+                  <span class="brand-sub">AI Office Procurement</span>
+                </div>
+              </div>
+              <div class="stat" style="margin-bottom:14px">
+                <div class="value">12 450 грн</div>
+                <div class="label">Total estimated</div>
+              </div>
+              <button class="primary" id="previewBtn" type="button">Run pipeline</button>
+              <span class="badge green" style="margin-left:10px">APPROVED</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
