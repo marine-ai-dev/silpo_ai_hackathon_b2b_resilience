@@ -313,8 +313,8 @@ export function buildApiRouter(silpoGateway) {
     companyId: null,
     companyName: 'MarineAI',
     logoUrl: '',
-    accentColor: '#7c5cff',
-    accentColorSecondary: '#22d3ee',
+    accentColor: '#FF8200',
+    accentColorSecondary: '#FFEDAD',
     createdAt: null,
     updatedAt: null
   };

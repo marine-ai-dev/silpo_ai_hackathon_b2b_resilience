@@ -1,57 +1,80 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Theming — overridden at runtime via JS on :root */
-  --accent: #7c5cff;
-  --accent-2: #22d3ee;
-  --accent-rgb: 124, 92, 255;
-  --accent-2-rgb: 34, 211, 238;
+  /* ---- Exact Silpo B2B design tokens (fixed hex values — do not
+     substitute with named CSS colors or alternate hues). ---- */
+  --brand-primary: #FF8200;
+  --brand-b2b-dark: #7C1B13;
+  --brand-b2b-light: #FFEDAD;
+  --surface-warm: #FFF8EA;
+  --surface-cool: #F7F8FE;
+  --text-primary: #231911;
+  --surface-card: #FFFFFF;
 
-  /* Base surface system (dark, premium, hardcoded regardless of OS scheme) */
-  --bg-0: #07070c;
-  --bg-1: #0c0d16;
-  --panel: rgba(255, 255, 255, 0.06);
-  --panel-strong: rgba(255, 255, 255, 0.09);
-  --panel-border: rgba(255, 255, 255, 0.14);
-  --panel-border-strong: rgba(255, 255, 255, 0.22);
-  --text: #f3f4f8;
-  --text-dim: #b7bacb;
-  --muted: #8b8ea3;
+  /* Theming — overridden at runtime via JS on :root (per-company white-label).
+     Defaults below map to the exact Silpo tokens above for the un-themed
+     demo. */
+  --accent: var(--brand-primary);
+  --accent-2: var(--brand-b2b-light);
+  --accent-rgb: 255, 130, 0;
+  --accent-2-rgb: 255, 237, 173;
 
-  --green: #34d399;
-  --green-rgb: 52, 211, 153;
-  --amber: #fbbf24;
-  --amber-rgb: 251, 191, 36;
-  --red: #fb7185;
-  --red-rgb: 251, 113, 133;
-  --blue: #60a5fa;
-  --blue-rgb: 96, 165, 250;
+  /* Silpo brand marks (not white-label — fixed, used for the B2B lockup and
+     a few brand-specific accents, independent of --accent/--accent-2). */
+  --silpo-red: var(--brand-b2b-dark);
+  --silpo-gold: var(--brand-b2b-light);
+  --silpo-red-rgb: 124, 27, 19;
+
+  /* Base surface system — warm Liquid-Glass premium light theme, built only
+     from the exact tokens above. */
+  --bg-0: var(--surface-warm);
+  --bg-1: var(--surface-cool);
+  --panel: rgba(255, 255, 255, 0.66);
+  --panel-strong: rgba(255, 255, 255, 0.9);
+  --panel-border: rgba(35, 25, 17, 0.10);
+  --panel-border-strong: rgba(35, 25, 17, 0.18);
+  --overlay-hover: rgba(35, 25, 17, 0.045);
+  --overlay-hover-strong: rgba(35, 25, 17, 0.08);
+  --text: var(--text-primary);
+  --text-dim: #5c4d3f;
+  --muted: #8c7c6c;
+
+  --green: #1f7a4d;
+  --green-rgb: 31, 122, 77;
+  --amber: #a85a00;
+  --amber-rgb: 168, 90, 0;
+  --red: var(--brand-b2b-dark);
+  --red-rgb: 124, 27, 19;
+  --blue: #2c5aa0;
+  --blue-rgb: 44, 90, 160;
 
   --radius-lg: 32px;
   --radius-md: 24px;
   --radius-sm: 14px;
 
-  --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
-  --shadow-lift: 0 16px 48px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  --shadow-soft: 0 6px 24px rgba(124, 27, 19, 0.08), 0 1px 0 rgba(255, 255, 255, 0.7) inset;
+  --shadow-lift: 0 14px 40px rgba(124, 27, 19, 0.12), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
 
   /* Focus ring — always visible, meets 2.4.13 size/contrast even outside a11y mode */
-  --focus-ring-color: #ffffff;
+  --focus-ring-color: var(--text-primary);
   --focus-ring-width: 3px;
 
-  color-scheme: dark;
+  color-scheme: light;
   font-size: 18px; /* scaled-up base — landing-page feel; rem units below inherit this */
 }
 
 /* ---- Accessibility / high-contrast mode ---- */
 :root[data-a11y="high-contrast"] {
   font-size: 23px; /* further ~28% step on top of the base scale-up */
-  --panel: rgba(14, 15, 22, 0.92);
-  --panel-strong: rgba(18, 19, 28, 0.96);
-  --panel-border: rgba(255, 255, 255, 0.4);
-  --panel-border-strong: rgba(255, 255, 255, 0.6);
-  --text: #ffffff;
-  --text-dim: #e9eaf2;
-  --muted: #cdd0e0;
+  --panel: rgba(255, 255, 255, 0.98);
+  --panel-strong: rgba(255, 255, 255, 1);
+  --panel-border: rgba(20, 14, 8, 0.55);
+  --panel-border-strong: rgba(20, 14, 8, 0.75);
+  --overlay-hover: rgba(20, 14, 8, 0.08);
+  --overlay-hover-strong: rgba(20, 14, 8, 0.14);
+  --text: #14100a;
+  --text-dim: #241a0f;
+  --muted: #4a3d2e;
 }
 :root[data-a11y="high-contrast"] .card,
 :root[data-a11y="high-contrast"] header.app-header,
@@ -135,20 +158,46 @@ header.app-header {
   padding: 16px 28px;
   margin: 16px 20px 0;
   background: var(--panel);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
   border: 1px solid var(--panel-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
 }
 
-.brand-block { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brand-block { display: flex; align-items: center; gap: 14px; min-width: 0; }
+
+/* ---- Silpo B2B lockup — fixed brand mark, independent of per-company
+   white-label theming below. Real Silpo logo + an expressive "B2B" mark
+   (red B's / gold 2, inspired by the bold condensed treatment Silpo uses
+   for expressive words like "КАТЕГОРИЧНЕ") ---- */
+.silpo-lockup { display: flex; align-items: center; gap: 9px; flex: none; }
+.silpo-logo { height: 26px; width: auto; display: block; }
+.b2b-mark {
+  display: inline-flex;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: -0.03em;
+  font-style: italic;
+  transform: skew(-8deg);
+  line-height: 1;
+}
+.b2b-mark .b2b-b { color: var(--brand-b2b-dark); text-shadow: 1px 1px 0 rgba(124, 27, 19, 0.18); }
+.b2b-mark .b2b-2 {
+  color: var(--brand-b2b-light);
+  -webkit-text-stroke: 0.7px var(--brand-b2b-dark);
+  text-shadow: 1px 1px 0 rgba(124, 27, 19, 0.25);
+  margin: 0 0.5px;
+}
+
+.brand-sep { width: 1px; align-self: stretch; margin: 2px 0; background: var(--panel-border-strong); flex: none; }
 
 .brand-logo {
   width: 38px; height: 38px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 14px; letter-spacing: 0.02em;
-  color: #06070c;
+  color: var(--text-primary);
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   box-shadow: 0 4px 18px rgba(var(--accent-rgb), 0.45);
   flex: none;
@@ -171,7 +220,7 @@ header.app-header {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--overlay-hover-strong);
   border: 1px solid var(--panel-border);
   padding: 5px 12px;
   border-radius: 999px;
@@ -183,7 +232,7 @@ header.app-header {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--overlay-hover);
   border: 1px solid var(--panel-border);
   padding: 5px 8px 5px 12px;
   border-radius: 999px;
@@ -198,12 +247,12 @@ header.app-header {
   padding: 5px 12px;
   border-radius: 999px;
   border: 1px solid var(--panel-border-strong);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--overlay-hover);
   color: var(--text);
   cursor: pointer;
   transition: background 180ms ease, transform 180ms ease, border-color 180ms ease;
 }
-.btn-small:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.32); transform: translateY(-1px); }
+.btn-small:hover { background: var(--overlay-hover-strong); border-color: var(--panel-border-strong); transform: translateY(-1px); }
 
 .silpo-toast {
   position: fixed;
@@ -216,8 +265,8 @@ header.app-header {
   font-weight: 500;
   color: var(--text);
   background: var(--panel-strong);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
   border: 1px solid var(--panel-border-strong);
   box-shadow: var(--shadow-lift);
   animation: toastIn 220ms ease;
@@ -234,8 +283,8 @@ nav.tabs {
   padding: 6px;
   margin: 14px 20px 0;
   background: var(--panel);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
   border: 1px solid var(--panel-border);
   border-radius: 999px;
   flex-wrap: wrap;
@@ -256,10 +305,10 @@ nav.tabs button {
   white-space: nowrap;
 }
 
-nav.tabs button:hover { color: var(--text-dim); background: rgba(255, 255, 255, 0.06); }
+nav.tabs button:hover { color: var(--text-dim); background: var(--overlay-hover); }
 
 nav.tabs button.active {
-  color: #06070c;
+  color: var(--text-primary);
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.4);
 }
@@ -281,8 +330,8 @@ section.screen.active { display: block; animation: fadeUp 260ms ease; }
 /* ---- Glass cards ---- */
 .card {
   background: var(--panel);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(125%);
+  -webkit-backdrop-filter: blur(12px) saturate(125%);
   border: 1px solid var(--panel-border);
   border-radius: var(--radius-lg);
   padding: 2rem 2.25rem;
@@ -331,10 +380,10 @@ section.screen.active { display: block; animation: fadeUp 260ms ease; }
 .stat .label { font-size: 0.8rem; color: var(--muted); margin-top: 0.6rem; font-weight: 600; letter-spacing: 0.02em; }
 
 table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-th, td { text-align: left; padding: 0.75rem 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.07); vertical-align: top; }
+th, td { text-align: left; padding: 0.75rem 0.85rem; border-bottom: 1px solid var(--panel-border); vertical-align: top; }
 th { color: var(--muted); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
 tbody tr { transition: background 160ms ease; }
-tbody tr:hover { background: rgba(255, 255, 255, 0.04); }
+tbody tr:hover { background: var(--overlay-hover); }
 tbody tr:last-child td { border-bottom: none; }
 
 /* ---- Buttons ---- */
@@ -342,7 +391,7 @@ button { font-family: inherit; }
 
 button.primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #06070c;
+  color: var(--text-primary);
   border: none;
   padding: 0.85rem 1.6rem;
   border-radius: 999px;
@@ -355,7 +404,7 @@ button.primary {
 button.primary:hover { transform: translateY(-1px); box-shadow: 0 10px 30px rgba(var(--accent-rgb), 0.5); filter: brightness(1.05); }
 button.primary:active { transform: translateY(0); }
 button.primary:disabled {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--overlay-hover-strong);
   color: var(--muted);
   cursor: not-allowed;
   box-shadow: none;
@@ -363,7 +412,7 @@ button.primary:disabled {
 }
 
 button.secondary {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--overlay-hover);
   border: 1px solid var(--panel-border-strong);
   color: var(--text);
   padding: 0.8rem 1.4rem;
@@ -373,7 +422,7 @@ button.secondary {
   cursor: pointer;
   transition: background 180ms ease, transform 180ms ease;
 }
-button.secondary:hover { background: rgba(255, 255, 255, 0.12); transform: translateY(-1px); }
+button.secondary:hover { background: var(--overlay-hover-strong); transform: translateY(-1px); }
 
 button.danger {
   background: rgba(var(--red-rgb), 0.16);
@@ -403,7 +452,7 @@ button.danger:hover { background: rgba(var(--red-rgb), 0.26); transform: transla
 .badge.amber { background: rgba(var(--amber-rgb), 0.14); color: var(--amber); border-color: rgba(var(--amber-rgb), 0.35); box-shadow: 0 0 14px rgba(var(--amber-rgb), 0.15); }
 .badge.red { background: rgba(var(--red-rgb), 0.14); color: var(--red); border-color: rgba(var(--red-rgb), 0.35); box-shadow: 0 0 14px rgba(var(--red-rgb), 0.15); }
 .badge.blue { background: rgba(var(--blue-rgb), 0.14); color: var(--blue); border-color: rgba(var(--blue-rgb), 0.35); box-shadow: 0 0 14px rgba(var(--blue-rgb), 0.15); }
-.badge.gray { background: rgba(255, 255, 255, 0.08); color: var(--muted); border-color: var(--panel-border); }
+.badge.gray { background: var(--overlay-hover-strong); color: var(--muted); border-color: var(--panel-border); }
 
 .delta-up { color: var(--green); font-weight: 700; }
 .delta-down { color: var(--amber); font-weight: 700; }
@@ -419,7 +468,7 @@ button.danger:hover { background: rgba(var(--red-rgb), 0.26); transform: transla
   border-radius: var(--radius-sm);
   font-size: 0.95rem;
   min-height: 24px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--overlay-hover);
   color: var(--text);
   font-family: inherit;
   transition: border-color 180ms ease, background 180ms ease;
@@ -427,7 +476,7 @@ button.danger:hover { background: rgba(var(--red-rgb), 0.26); transform: transla
 .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
   outline: none;
   border-color: var(--accent);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--overlay-hover-strong);
 }
 .form-row input::placeholder { color: var(--muted); }
 
@@ -442,7 +491,7 @@ button.danger:hover { background: rgba(var(--red-rgb), 0.26); transform: transla
   letter-spacing: 0.03em;
   padding: 5px 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--overlay-hover);
   border: 1px solid var(--panel-border);
   color: var(--muted);
   transition: all 220ms ease;
@@ -450,7 +499,7 @@ button.danger:hover { background: rgba(var(--red-rgb), 0.26); transform: transla
 .pill-steps span.done { background: rgba(var(--green-rgb), 0.14); color: var(--green); border-color: rgba(var(--green-rgb), 0.35); }
 .pill-steps span.current {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #06070c;
+  color: var(--text-primary);
   border-color: transparent;
   box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.5);
 }
@@ -460,7 +509,7 @@ button.danger:hover { background: rgba(var(--red-rgb), 0.26); transform: transla
 
 code.small {
   font-size: 11px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--overlay-hover-strong);
   border: 1px solid var(--panel-border);
   padding: 2px 6px;
   border-radius: 5px;
@@ -478,7 +527,7 @@ code.small {
   padding: 10px 12px;
   border: 1px solid var(--panel-border-strong);
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--overlay-hover);
   color: var(--text);
   font-size: 13.5px;
   font-family: inherit;
@@ -515,7 +564,7 @@ code.small { }
   gap: 8px;
   font-size: 0.72rem;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--overlay-hover);
   border: 1px solid var(--panel-border);
   padding: 5px 12px 5px 12px;
   border-radius: 999px;
@@ -523,13 +572,13 @@ code.small { }
   cursor: pointer;
   min-height: 32px;
 }
-.a11y-toggle:hover { background: rgba(255, 255, 255, 0.12); }
+.a11y-toggle:hover { background: var(--overlay-hover-strong); }
 .a11y-switch {
   position: relative;
   width: 34px;
   height: 20px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--panel-border-strong);
   border: 1px solid var(--panel-border-strong);
   flex: none;
   transition: background 180ms ease;

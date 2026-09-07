@@ -121,8 +121,8 @@ function applyTheme(theme) {
   if (!theme) return;
   state.theme = theme;
   const root = document.documentElement;
-  root.style.setProperty('--accent', theme.accentColor || '#7c5cff');
-  root.style.setProperty('--accent-2', theme.accentColorSecondary || '#22d3ee');
+  root.style.setProperty('--accent', theme.accentColor || '#FF8200');
+  root.style.setProperty('--accent-2', theme.accentColorSecondary || '#FFEDAD');
   root.style.setProperty('--accent-rgb', hexToRgb(theme.accentColor));
   root.style.setProperty('--accent-2-rgb', hexToRgb(theme.accentColorSecondary));
 
@@ -172,10 +172,10 @@ function renderThemeForm() {
   const t = state.theme || {};
   $('#themeCompanyName').value = t.companyName || 'MarineAI';
   $('#themeLogoUrl').value = t.logoUrl || '';
-  $('#themeAccent').value = t.accentColor || '#7c5cff';
-  $('#themeAccentHex').textContent = t.accentColor || '#7c5cff';
-  $('#themeAccent2').value = t.accentColorSecondary || '#22d3ee';
-  $('#themeAccent2Hex').textContent = t.accentColorSecondary || '#22d3ee';
+  $('#themeAccent').value = t.accentColor || '#FF8200';
+  $('#themeAccentHex').textContent = t.accentColor || '#FF8200';
+  $('#themeAccent2').value = t.accentColorSecondary || '#FFEDAD';
+  $('#themeAccent2Hex').textContent = t.accentColorSecondary || '#FFEDAD';
   renderAccentSwatches();
 }
 

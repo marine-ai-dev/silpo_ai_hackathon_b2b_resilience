@@ -243,8 +243,8 @@ export function seed() {
     companyId: COMPANY_ID,
     companyName: 'MarineAI',
     logoUrl: '',
-    accentColor: '#7c5cff',
-    accentColorSecondary: '#22d3ee',
+    accentColor: '#FF8200',
+    accentColorSecondary: '#FFEDAD',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   });
