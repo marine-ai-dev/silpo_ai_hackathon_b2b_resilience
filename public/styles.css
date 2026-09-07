@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Baloo+2:wght@700;800&display=swap');
 
 :root {
   /* ---- Exact Silpo B2B design tokens (fixed hex values — do not
@@ -171,24 +171,31 @@ header.app-header {
    white-label theming below. Real Silpo logo + an expressive "B2B" mark
    (red B's / gold 2, inspired by the bold condensed treatment Silpo uses
    for expressive words like "КАТЕГОРИЧНЕ") ---- */
-.silpo-lockup { display: flex; align-items: center; gap: 9px; flex: none; }
-.silpo-logo { height: 26px; width: auto; display: block; }
+.silpo-lockup { display: flex; align-items: center; gap: 11px; flex: none; }
+.silpo-logo { height: 28px; width: auto; display: block; }
 .b2b-mark {
   display: inline-flex;
-  font-family: 'Manrope', sans-serif;
+  align-items: baseline;
+  font-family: 'Baloo 2', 'Manrope', sans-serif;
   font-weight: 800;
-  font-size: 21px;
-  letter-spacing: -0.03em;
-  font-style: italic;
-  transform: skew(-8deg);
+  font-size: 28px;
+  letter-spacing: -0.045em;
   line-height: 1;
+  transform: skew(-9deg);
 }
-.b2b-mark .b2b-b { color: var(--brand-b2b-dark); text-shadow: 1px 1px 0 rgba(124, 27, 19, 0.18); }
+.b2b-mark span { display: inline-block; }
+.b2b-mark .b2b-b {
+  color: var(--brand-b2b-dark);
+  text-shadow: 1.5px 1.5px 0 rgba(124, 27, 19, 0.22);
+}
+.b2b-mark .b2b-b:first-child { transform: rotate(-4deg) translateY(1px); }
+.b2b-mark .b2b-b:last-child { transform: rotate(3deg) translateY(-1px); }
 .b2b-mark .b2b-2 {
   color: var(--brand-b2b-light);
-  -webkit-text-stroke: 0.7px var(--brand-b2b-dark);
-  text-shadow: 1px 1px 0 rgba(124, 27, 19, 0.25);
-  margin: 0 0.5px;
+  -webkit-text-stroke: 1px var(--brand-b2b-dark);
+  text-shadow: 1.5px 1.5px 0 rgba(124, 27, 19, 0.3);
+  transform: scale(1.12) translateY(-2px);
+  margin: 0 1px;
 }
 
 .brand-sep { width: 1px; align-self: stretch; margin: 2px 0; background: var(--panel-border-strong); flex: none; }
