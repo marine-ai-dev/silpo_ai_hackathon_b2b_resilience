@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DreamGift Atelier — Demo Office Portal</title>
+<link rel="stylesheet" href="/styles.css" />
+<link rel="stylesheet" href="/portal/portal.css" />
+</head>
+<body>
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-mark">DG</div>
+    <div>
+      <div class="brand-name">DreamGift Atelier</div>
+      <div class="brand-sub">Demo Office Portal · Silpo B2B AI Procurement</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <span id="silpoModeBadge" class="badge">Silpo MCP: …</span>
+    <span id="geminiBadge" class="badge">Gemini: …</span>
+    <a href="/" class="badge link">← Full app</a>
+  </div>
+</header>
+
+<main class="portal-main">
+
+  <section class="card profile-card">
+    <h2>Профіль офісу</h2>
+    <div class="profile-grid">
+      <label>Компанія<input id="companyName" value="DreamGift Atelier" disabled /></label>
+      <label>Співробітники / очікувана явка
+        <input id="expectedAttendance" type="number" min="1" />
+      </label>
+      <label>Тижневий бюджет (₴)
+        <input id="weeklyBudget" type="number" min="0" />
+      </label>
+      <label>Локація<input id="officeAddress" disabled /></label>
+    </div>
+    <div class="profile-actions">
+      <button id="saveProfileBtn" class="btn secondary">Зберегти зміни</button>
+      <span id="saveProfileStatus" class="hint"></span>
+    </div>
+  </section>
+
+  <div class="grid-2">
+    <section class="card">
+      <h2>Поточний запас (readiness)</h2>
+      <div id="readinessList" class="readiness-list">Завантаження…</div>
+    </section>
+
+    <section class="card">
+      <h2>Живлення / blackout-вікно</h2>
+      <div id="powerStatus" class="power-status">Завантаження…</div>
+    </section>
+  </div>
+
+  <section class="card feedback-card">
+    <h2>Consumption feedback</h2>
+    <div id="feedbackList" class="feedback-list">Завантаження…</div>
+    <form id="feedbackForm" class="feedback-form">
+      <select id="fbProduct">
+        <option value="water">Вода</option>
+        <option value="coffee">Кава</option>
+        <option value="tea">Чай</option>
+        <option value="milk">Молоко</option>
+        <option value="fruit">Фрукти</option>
+        <option value="snacks">Снеки</option>
+      </select>
+      <select id="fbSignal">
+        <option value="NOT_ENOUGH">Не вистачало</option>
+        <option value="JUST_RIGHT">Було достатньо</option>
+        <option value="TOO_MUCH">Забагато</option>
+      </select>
+      <input id="fbNote" placeholder="Коментар (необов'язково)" />
+      <button type="submit" class="btn secondary small">Додати відгук</button>
+    </form>
+  </section>
+
+  <section class="card run-card">
+    <div class="run-card-head">
+      <h2>Run AI Procurement Plan</h2>
+      <button id="runPlanBtn" class="btn primary large">▶ Run AI Procurement Plan</button>
+    </div>
+    <p class="hint">Демонструє повний агентний workflow: прогноз попиту → реальний пошук товарів через Silpo MCP → бюджетна оптимізація → рекомендація щодо стійкості/доставки → людське затвердження → підготовка кошика (без оформлення замовлення).</p>
+
+    <div id="timeline" class="timeline" hidden></div>
+    <div id="runResult" class="run-result" hidden></div>
+  </section>
+
+</main>
+
+<footer class="portal-footer">
+  <span>DreamGift Atelier — hackathon demo profile. Ніколи не оформлює й не оплачує замовлення автоматично.</span>
+</footer>
+
+<script src="/portal/portal.js"></script>
+</body>
+</html>

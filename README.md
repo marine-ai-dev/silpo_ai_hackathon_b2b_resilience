@@ -172,6 +172,75 @@ A "no schedule seeded" state resolves to `UNAVAILABLE`, never quietly to `DEMO` 
 - For DTEK/outage-schedule data specifically: **no documented and verifiable official public programmatic API for outage schedules was found during our research.** Power-schedule data is either manually entered by an office manager or demo-seeded for presentation — always labeled as such.
 - The AI does **not** predict attacks or outages — it reasons over known/entered schedule data only.
 
+## 🖥️ Demo Office Portal
+
+A second, deliberately small web surface — `public/portal/` — that represents
+one seeded customer, **DreamGift Atelier** (~40 employees), and gives a
+judge a single obvious interactive flow instead of requiring API calls or
+terminal commands.
+
+It is **not** a second SaaS or a second backend: the portal is a static page
+that talks to our existing application API (`/api/...`) over normal
+GET/POST/PUT, and that API is the only thing that ever calls Silpo MCP.
+The portal never calls MCP directly and never pretends to.
+
+```
+Demo Office Portal (public/portal/)
+        │  GET/POST/PUT /api/offices/:id/...
+        ▼
+Our Express app (src/routes/api.js)
+        │  MCP tool calls (silpo_find_products_batch, etc.)
+        ▼
+Silpo MCP server (mcp.silpo.ua)
+```
+
+**Exact demo steps** (`http://localhost:3000/portal/`, or the deployed URL below):
+
+1. Open the portal — DreamGift Atelier's profile loads: 40 employees, weekly
+   budget, current readiness stock gaps, and the manually-entered power
+   window (never a fake `LIVE` schedule — see [Data Provenance](#-data-provenance)).
+2. Edit expected attendance or weekly budget and save — writes through
+   `PUT /api/offices/:id` and `PUT /api/offices/:id/budget`.
+3. Optionally add a consumption feedback entry (e.g. "coffee — not enough").
+4. Click **▶ Run AI Procurement Plan**. A compact activity timeline appears
+   live, one step per component — this is what makes the agentic workflow
+   visible instead of implicit:
+   - 🟣 **Demand Agent** — analysed consumption + attendance + feedback
+   - 🟣 **Procurement Agent** — searched Silpo through MCP
+   - 🟣 **Budget & Policy Agent** — optimised the proposal to fit budget
+   - 🔵 **Resilience Planner** — folded in power status + readiness risk
+   - ⚪ **Human** — approval required before anything touches a real cart
+5. Review the resulting proposal (real/mock Silpo products, prices, budget
+   check), the resilience recommendation, and a short plain-language
+   explanation of what changed and why (Gemini Flash if `GEMINI_API_KEY`
+   is set, an equally factual deterministic template otherwise — see below).
+6. Click **✅ Затвердити план** — approves the proposal, then prepares a
+   real Silpo cart via `cartPreparationService` (gated in code on
+   `status === 'approved'`). **Checkout is never triggered** — there is no
+   such tool in the audited Silpo MCP server to begin with.
+
+**Optional Gemini Flash integration** (`src/services/explainService.js`):
+used only to *phrase* already-computed facts (forecast changes, budget
+trims) more naturally — never to compute quantities, prices, or budget
+decisions, which stay deterministic and testable regardless of whether an
+LLM is available. If `GEMINI_API_KEY` is absent or the call fails, the
+portal shows a deterministic explanation built from the same facts and
+labels itself `deterministic`, never a faked `gemini-flash` result.
+
+## 🚢 Deployment
+
+The app is designed to run as a single Railway service (`npm start`, reads
+`PORT` from the environment, serves both `/` and `/portal/` from one
+Express process — no second service needed since they're not separately
+deployable). **Deployment was attempted during the hackathon build but
+blocked by an external constraint**: the connected Railway account's free
+plan had already reached its resource/service provisioning limit from
+unrelated pre-existing projects, and provisioning more requires a paid
+plan upgrade — an action outside what this project will do without the
+account owner's direct approval. Run it locally with the commands in
+[Verification](#-verification) below; deploying to a Railway project with
+available capacity needs no code changes, only `railway up`.
+
 ## 🎬 Demo Scenario
 
 **Scenario A** — scheduled outage tomorrow 14:00–18:00 (Kyiv HQ): power situation → `PREPARE` risk → 5/5 categories below target → real Silpo product search → budget-optimized proposal → earlier delivery recommendation → manager approval required → recycling log update. Full script: [`docs/hackathon/DEMO_SCRIPT.md`](docs/hackathon/DEMO_SCRIPT.md). Three more deterministic scenarios (active blackout + branch reroute, no-power-data degradation, recycling loop) are documented in [`docs/b2b-resilience/DEMO_SCENARIOS.md`](docs/b2b-resilience/DEMO_SCENARIOS.md).
@@ -183,7 +252,12 @@ npm install
 npm run seed     # deterministic demo data, safe to re-run anytime
 npm test          # 89/89 passing
 npm start          # SILPO_MODE=mock by default — http://localhost:3000
+# then open http://localhost:3000/portal/ for the Demo Office Portal (DreamGift Atelier)
 ```
+
+Set `GEMINI_API_KEY` before `npm start` to enable Gemini Flash explanations
+in the portal's run summary; leave it unset and the demo runs identically
+with a deterministic explanation instead — nothing breaks either way.
 
 Live-mode integration was independently verified against the real, authenticated Silpo MCP during hardening — see [`docs/b2b-resilience/LIVE_MCP_VERIFICATION.md`](docs/b2b-resilience/LIVE_MCP_VERIFICATION.md) for the exact calls, responses, and what was deliberately never executed (checkout, payment, cancellation).
 

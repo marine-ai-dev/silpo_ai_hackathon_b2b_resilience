@@ -16,6 +16,7 @@
 
 import { collections, resetDatabase } from '../src/repositories/jsonStore.js';
 import { DemoScheduleProvider } from '../src/power/DemoScheduleProvider.js';
+import { ManualScheduleProvider } from '../src/power/ManualScheduleProvider.js';
 
 const OFFICE_ID = 'office-kyiv-hq';
 const COMPANY_ID = 'company-demo-tech-office';
@@ -316,6 +317,114 @@ export function seed() {
     note: 'Seeded active for demo purposes — a real deployment would have an office manager toggle this via the UI.'
   });
 
+  // ---- Demo Office Portal customer: DreamGift Atelier (~40 employees) ----
+  // This is the single seeded organisation the Demo Office Portal
+  // (public/portal/) opens by default — a realistic small-business profile
+  // (gift/atelier retailer's own office), not a second copy of the tech-
+  // office scenario above. Reuses the same SUPPLY_ITEMS catalog (real Silpo
+  // category slugs, already verified) and the same three deterministic
+  // agents — no separate demo logic path.
+  const DREAMGIFT_OFFICE_ID = 'office-dreamgift-atelier';
+  const DREAMGIFT_COMPANY_ID = 'company-dreamgift-atelier';
+  const DREAMGIFT_MEMBER_COUNT = 40;
+
+  collections.companies.insert({ id: DREAMGIFT_COMPANY_ID, name: 'DreamGift Atelier', createdAt: new Date().toISOString() });
+
+  collections.offices.insert({
+    id: DREAMGIFT_OFFICE_ID,
+    companyId: DREAMGIFT_COMPANY_ID,
+    name: 'DreamGift Atelier — Office',
+    // Lviv: chosen because it already has a confirmed generator-branch
+    // reconciliation entry pattern in this dataset's city set is Dnipro/
+    // Kyiv/Zaporizhzhia/Vinnytsia/etc — Lviv is not itself in the captured
+    // GeneratorBranch snapshot, so this office honestly demonstrates the
+    // "no confirmed generator-branch match — falling back to normal branch
+    // selection" path rather than implying coverage that wasn't verified.
+    address: { text: 'вул. Городоцька 30, Львів', lat: 49.8397, lon: 24.0297 },
+    memberCount: DREAMGIFT_MEMBER_COUNT,
+    createdAt: new Date().toISOString()
+  });
+
+  collections.officeMembers.insert({ officeId: DREAMGIFT_OFFICE_ID, name: 'DreamGift Atelier team (40 осіб)', dietaryTags: [] });
+
+  collections.recurringSupplyPlans.insert({
+    officeId: DREAMGIFT_OFFICE_ID,
+    name: 'Щотижневі офісні поставки',
+    items: SUPPLY_ITEMS
+  });
+
+  // Weekly budget scaled from the Kyiv HQ baseline (₴3500 / 24 people ≈
+  // ₴146/person/week) to DreamGift's 40 people — a defensible, documented
+  // seed, not an arbitrary number.
+  const DREAMGIFT_WEEKLY_BUDGET = 5800;
+  collections.officeBudgets.insert({ officeId: DREAMGIFT_OFFICE_ID, weeklyBudgetUAH: DREAMGIFT_WEEKLY_BUDGET });
+  collections.procurementPolicies.insert({
+    officeId: DREAMGIFT_OFFICE_ID,
+    maxPerCategoryUAH: { coffee: 2000, snacks: 1000 },
+    bannedCategorySlugs: [],
+    preferPromotions: true
+  });
+
+  // 5 weeks of consumption history scaled ~1.7x the Kyiv HQ baseline
+  // (40/24 people), with the same kind of week-over-week variation so the
+  // DemandAgent has real trailing data to forecast from on first run.
+  const DREAMGIFT_SCALE = DREAMGIFT_MEMBER_COUNT / HISTORICAL_MEMBER_COUNT;
+  const dgBaselines = { water: 40, coffee: 2.2, tea: 3, milk: 15, fruit: 12, snacks: 14 };
+  const dgVariation = { water: [0, 6, -4, 3, -2], coffee: [0, -0.3, 0.4, -0.2, 0.3], tea: [0, 0.8, -0.6, 0.4, 1.2], milk: [0, 1.5, -1, 2.5, -1.5], fruit: [0, 3, -2, 1.5, 0.5], snacks: [0, 3, 4, 2, 5] };
+  for (let w = 5; w >= 1; w--) {
+    const weekOf = isoMondayWeeksAgo(w);
+    for (const item of SUPPLY_ITEMS) {
+      const idx = 5 - w;
+      const qty = Math.max(1, Math.round((dgBaselines[item.productKey] * DREAMGIFT_SCALE + (dgVariation[item.productKey]?.[idx] ?? 0)) * 10) / 10);
+      collections.consumptionRecords.insert({
+        officeId: DREAMGIFT_OFFICE_ID, weekOf, productKey: item.productKey, productName: item.label, quantity: qty, unit: item.unit
+      });
+    }
+  }
+
+  const dgLastWeek = isoMondayWeeksAgo(1);
+  const DREAMGIFT_FEEDBACK = [
+    { officeId: DREAMGIFT_OFFICE_ID, weekOf: dgLastWeek, productKey: 'coffee', signal: 'NOT_ENOUGH', note: 'Coffee beans ran out before Friday — atelier team works longer hours pre-holiday season.' },
+    { officeId: DREAMGIFT_OFFICE_ID, weekOf: dgLastWeek, productKey: 'water', signal: 'JUST_RIGHT', note: 'Water supply matched demand well.' },
+    { officeId: DREAMGIFT_OFFICE_ID, weekOf: dgLastWeek, productKey: 'fruit', signal: 'TOO_MUCH', note: 'Fruit basket left over most weeks.' }
+  ];
+  for (const fb of DREAMGIFT_FEEDBACK) collections.supplyFeedback.insert(fb);
+
+  // Emergency readiness: seeded stock gaps (same real, confirmed-in-catalog
+  // categories as Kyiv HQ), scaled to a 40-person office.
+  const DREAMGIFT_READINESS_ITEMS = [
+    { label: 'Батарейки AA', category: 'readiness', unit: 'шт', silpoCategorySlug: 'batareiky-567-3', targetProductQuery: 'duracell aa', targetQuantity: 32, currentQuantity: 6 },
+    { label: 'Батарейки AAA', category: 'readiness', unit: 'шт', silpoCategorySlug: 'batareiky-567-3', targetProductQuery: 'varta aaa', targetQuantity: 16, currentQuantity: 4 },
+    { label: 'LED-ліхтарик / лампа', category: 'readiness', unit: 'шт', silpoCategorySlug: 'osvitlennia-567-4', targetProductQuery: 'led videx', targetQuantity: 6, currentQuantity: 1 },
+    { label: 'Свічки', category: 'readiness', unit: 'шт', silpoCategorySlug: 'svichky-567-5', targetProductQuery: 'свічки', targetQuantity: 10, currentQuantity: 2 },
+    { label: 'Подовжувач', category: 'readiness', unit: 'шт', silpoCategorySlug: 'elektryka-567-6', targetProductQuery: 'подовжувач', targetQuantity: 3, currentQuantity: 0 }
+  ];
+  for (const ri of DREAMGIFT_READINESS_ITEMS) {
+    const item = collections.readinessItems.insert({
+      officeId: DREAMGIFT_OFFICE_ID, label: ri.label, category: ri.category, unit: ri.unit,
+      silpoCategorySlug: ri.silpoCategorySlug, targetProductQuery: ri.targetProductQuery, targetQuantity: ri.targetQuantity
+    });
+    collections.readinessStockChecks.insert({
+      officeId: DREAMGIFT_OFFICE_ID, readinessItemId: item.id, currentQuantity: ri.currentQuantity,
+      note: 'Seed demo stock check — DreamGift Atelier, partial/low stock on hand.', checkedAt: new Date().toISOString()
+    });
+  }
+
+  // Power schedule: MANUAL only (per hackathon-honesty rule — no live DTEK
+  // feed exists; see docs/b2b-resilience/DTEK_RESEARCH.md). Written through
+  // the real ManualScheduleProvider so it round-trips exactly like a
+  // manager's own entry would, not a shortcut into the powerSchedules
+  // collection.
+  new ManualScheduleProvider().setSchedule(DREAMGIFT_OFFICE_ID, {
+    start: kyivIsoTomorrowAt(10, 0),
+    end: kyivIsoTomorrowAt(13, 0),
+    currentStatus: 'normal',
+    note: 'Manually entered from DTEK\'s own outage checker by the office manager — DreamGift Atelier, scheduled window tomorrow 10:00-13:00 Kyiv time.',
+    setBy: 'Офіс-менеджер (DreamGift Atelier)'
+  });
+
+  console.log('[seed] DreamGift Atelier demo customer created: office=%s, employees=%d, weekly budget=%d UAH', DREAMGIFT_OFFICE_ID, DREAMGIFT_MEMBER_COUNT, DREAMGIFT_WEEKLY_BUDGET);
+
   console.log('[seed] Demo data created: office=%s, weeks of history=5, feedback=%d', OFFICE_ID, buildFeedback().length);
   console.log('[seed] Next procurement run week: %s, expected attendance: %d (baseline member count: %d)', nextWeekOf(), NEXT_WEEK_EXPECTED_ATTENDANCE, HISTORICAL_MEMBER_COUNT);
   console.log('[seed] Scenario A: DEMO power schedule seeded for %s (outage tomorrow 14:00-18:00 Kyiv time).', OFFICE_ID);
@@ -355,7 +464,11 @@ export function seedIfEmpty() {
   }
 }
 
-export const SEED_CONSTANTS = { OFFICE_ID, COMPANY_ID, HISTORICAL_MEMBER_COUNT, NEXT_WEEK_EXPECTED_ATTENDANCE, DNIPRO_OFFICE_ID: 'office-dnipro-branch' };
+export const SEED_CONSTANTS = {
+  OFFICE_ID, COMPANY_ID, HISTORICAL_MEMBER_COUNT, NEXT_WEEK_EXPECTED_ATTENDANCE,
+  DNIPRO_OFFICE_ID: 'office-dnipro-branch',
+  DREAMGIFT_OFFICE_ID: 'office-dreamgift-atelier', DREAMGIFT_COMPANY_ID: 'company-dreamgift-atelier'
+};
 
 // Allow `node scripts/seed.js` to force-reseed.
 if (import.meta.url === `file://${process.argv[1]}`) {

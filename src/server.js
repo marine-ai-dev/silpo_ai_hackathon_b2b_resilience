@@ -17,6 +17,7 @@ const silpoGateway = new SilpoGateway();
 
 app.use('/api/silpo', buildSilpoAuthRouter());
 app.use('/api', buildApiRouter(silpoGateway));
+app.use('/portal', express.static(path.join(__dirname, '..', 'public', 'portal')));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 const PORT = process.env.PORT || 3000;

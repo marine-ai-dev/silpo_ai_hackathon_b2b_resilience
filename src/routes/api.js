@@ -6,6 +6,7 @@ import { prepareCartForProposal } from '../services/cartPreparationService.js';
 import { computeShortfalls } from '../agents/readinessAgent.js';
 import { buildOfficeResiliencePlan } from '../resilience/resiliencePlanner.js';
 import { getEffectivePowerSchedule, getManualScheduleProvider, ManualScheduleProviderError } from '../power/index.js';
+import { explainProcurementRun } from '../services/explainService.js';
 
 export function buildApiRouter(silpoGateway) {
   const router = Router();
@@ -29,9 +30,35 @@ export function buildApiRouter(silpoGateway) {
     ok(res, collections.recurringSupplyPlans.findOne((p) => p.officeId === req.params.id));
   });
 
+  // ---- Office profile edits (Demo Office Portal: employees / attendance) ----
+  router.put('/offices/:id', (req, res) => {
+    try {
+      const existing = collections.offices.getById(req.params.id);
+      if (!existing) return fail(res, new Error('Office not found'), 404);
+      const { memberCount } = req.body;
+      const patch = {};
+      if (memberCount !== undefined) {
+        const n = Number(memberCount);
+        if (!Number.isFinite(n) || n <= 0) return fail(res, new Error('memberCount must be a positive number'), 400);
+        patch.memberCount = n;
+      }
+      ok(res, collections.offices.update(req.params.id, patch));
+    } catch (err) { fail(res, err); }
+  });
+
   // ---- Budget & policy ----
   router.get('/offices/:id/budget', (req, res) => {
     ok(res, collections.officeBudgets.findOne((b) => b.officeId === req.params.id));
+  });
+  router.put('/offices/:id/budget', (req, res) => {
+    try {
+      const existing = collections.officeBudgets.findOne((b) => b.officeId === req.params.id);
+      if (!existing) return fail(res, new Error('OfficeBudget not found'), 404);
+      const { weeklyBudgetUAH } = req.body;
+      const n = Number(weeklyBudgetUAH);
+      if (!Number.isFinite(n) || n <= 0) return fail(res, new Error('weeklyBudgetUAH must be a positive number'), 400);
+      ok(res, collections.officeBudgets.update(existing.id, { weeklyBudgetUAH: n }));
+    } catch (err) { fail(res, err); }
   });
   router.get('/offices/:id/policy', (req, res) => {
     ok(res, collections.procurementPolicies.findOne((p) => p.officeId === req.params.id));
@@ -118,6 +145,21 @@ export function buildApiRouter(silpoGateway) {
   });
 
   router.get('/meta/silpo-mode', (req, res) => ok(res, { mode: silpoGateway.mode }));
+  router.get('/meta/gemini-status', (req, res) => ok(res, { available: !!process.env.GEMINI_API_KEY }));
+
+  // ---- Optional contextual explanation for a completed run (Gemini Flash
+  // when GEMINI_API_KEY is set, deterministic template otherwise; never
+  // recomputes quantities/budget — see explainService.js). ----
+  router.get('/procurement-runs/:runId/explain', async (req, res) => {
+    try {
+      const run = collections.procurementRuns.getById(req.params.runId);
+      if (!run) return fail(res, new Error('Run not found'), 404);
+      const forecast = run.demandForecastId ? collections.demandForecasts.getById(run.demandForecastId) : null;
+      const proposal = run.procurementProposalId ? collections.procurementProposals.getById(run.procurementProposalId) : null;
+      const explanation = await explainProcurementRun({ forecast, proposal });
+      ok(res, explanation);
+    } catch (err) { fail(res, err, 500); }
+  });
 
   // ---- Emergency Readiness (Feature 1) ----
   router.get('/offices/:id/readiness-items', (req, res) => {
