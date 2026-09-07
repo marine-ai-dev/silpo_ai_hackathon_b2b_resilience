@@ -232,14 +232,63 @@ labels itself `deterministic`, never a faked `gemini-flash` result.
 The app is designed to run as a single Railway service (`npm start`, reads
 `PORT` from the environment, serves both `/` and `/portal/` from one
 Express process — no second service needed since they're not separately
-deployable). **Deployment was attempted during the hackathon build but
-blocked by an external constraint**: the connected Railway account's free
-plan had already reached its resource/service provisioning limit from
-unrelated pre-existing projects, and provisioning more requires a paid
-plan upgrade — an action outside what this project will do without the
-account owner's direct approval. Run it locally with the commands in
-[Verification](#-verification) below; deploying to a Railway project with
-available capacity needs no code changes, only `railway up`.
+deployable). **Railway deployment was attempted twice during the hackathon
+build and both times blocked by the same external constraint**: the
+connected Railway account's free plan has already reached its
+resource/service provisioning limit from unrelated pre-existing projects
+(`MyCRM`, `Postgres`, `ai-news-assistant`), and provisioning one more
+service requires a paid plan upgrade — an action this project will not
+take without the account owner's direct approval, and no existing
+production service was touched to free up room. Deploying to a Railway
+project with available capacity needs no code changes, only `railway up`.
+
+### Zero-cost public demo fallback
+
+For judging without a paid Railway upgrade, `npm run demo:public`
+(`scripts/demo-public.sh`) starts the unchanged app locally and exposes it
+through a [Cloudflare quick tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/)
+(`cloudflared`) — free, no account required, no DNS setup, no code changes
+to business logic. It prints one public HTTPS URL; `/` is the main app and
+`/portal/` is the DreamGift Atelier Demo Office Portal, both served from
+that same URL exactly as they are locally.
+
+```bash
+brew install cloudflared   # one-time, macOS (see script header for other platforms)
+npm run demo:public        # starts the app + tunnel, prints the public URL, Ctrl+C to stop
+```
+
+**One-command recovery** if the tunnel drops or needs restarting during
+judging: press `Ctrl+C` to stop, then re-run `npm run demo:public` — it
+starts a fresh app process and a fresh tunnel and prints a new URL (quick
+tunnels aren't guaranteed stable/long-lived, which is expected for this
+free tier).
+
+This fallback was verified from within the hackathon build environment
+against `cloudflared`'s local behavior; the environment's own outbound
+network policy blocked reaching `api.trycloudflare.com` specifically from
+inside that sandbox (`github.com`/`cloudflare.com` were reachable, so this
+is a scoped network restriction of the build environment, not a code
+issue) — the script is expected to work normally on a judge's or
+presenter's own machine with standard internet access, and is the same
+command either way.
+
+### Switching this deployment to LIVE Silpo MCP
+
+The demo runs in `SILPO_MODE=mock` by default — deterministic, no
+credentials needed. To point the **same** deployment (Railway or the
+tunnel fallback) at real Silpo MCP data instead, set before starting:
+
+```bash
+export SILPO_MODE=live
+npm start   # or: npm run demo:public
+```
+
+The app then performs its own OAuth 2.1 + PKCE + Dynamic Client
+Registration handshake against `mcp.silpo.ua` on first use (see
+[`docs/b2b-mvp/SILPO_OAUTH.md`](docs/b2b-mvp/SILPO_OAUTH.md)) — no
+credentials are hardcoded or committed anywhere in this repository;
+`data/silpo-oauth*.json` (the resulting tokens) stay gitignored. Never
+commit those files or a `.env` containing real tokens.
 
 ## 🎬 Demo Scenario
 
