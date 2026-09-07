@@ -3,6 +3,33 @@
 Presentation-friendly outline, not documentation. Each slide: title, one
 key message, 3–5 bullets max, a suggested visual, a short speaker note.
 
+## Live deployment (final, verified)
+
+- **Main app:** https://silpo-b2b-resilience-production.up.railway.app/
+- **Demo Office Portal (primary judge-facing demo):** https://silpo-b2b-resilience-production.up.railway.app/portal/
+- Runs in **`SILPO_MODE=mock`** — deterministic and reliable for live judging.
+  Real Silpo MCP integration (live product search, pricing, delivery
+  resolution) was **separately verified** against the authenticated MCP
+  server during hardening — see
+  [`docs/b2b-resilience/LIVE_MCP_VERIFICATION.md`](../b2b-resilience/LIVE_MCP_VERIFICATION.md).
+  **Never present the deployed mock demo as `LIVE_MCP`** — the UI itself
+  labels every run `MOCK`, truthfully.
+- Checkout remains human-controlled: the deployed demo prepares a real
+  Silpo cart shape post-approval and stops there — no autonomous
+  checkout/payment exists anywhere in the audited MCP surface.
+- Gemini (optional contextual explanation) is not configured on this
+  deployment — `/api/meta/gemini-status` reports `available: false`, and
+  the portal runs on its deterministic explanation fallback, which is the
+  intended, fully-functional behavior when no key is set.
+
+## Screenshot status
+
+Real screenshots should be captured directly from the two URLs above.
+This deck references exact, live-verified data pulled from the deployed
+app (not invented) wherever a screenshot isn't yet embedded — each such
+spot names the precise screen state to capture. No generated or fake UI
+image has been used anywhere in this deck.
+
 ---
 
 ### Slide 1 — Problem
@@ -43,6 +70,7 @@ key message, 3–5 bullets max, a suggested visual, a short speaker note.
 - Resilience layer: power status → risk → emergency stock gap → timing → branch recommendation
 - One human approval gate before anything touches a real Silpo cart — always
 - A closed battery lifecycle: buy → use → collect → recycle
+- **Judge-facing demo:** the DreamGift Atelier Demo Office Portal (https://silpo-b2b-resilience-production.up.railway.app/portal/) — one screen, one "Run AI Procurement Plan" button, the same backend and agents as the main app
 
 **Visual:** the one-workflow diagram from `ARCHITECTURE_DIAGRAM.md`.
 
@@ -91,7 +119,24 @@ key message, 3–5 bullets max, a suggested visual, a short speaker note.
 - Procurement lead time + delivery-window shift, computed from the actual outage window
 - Branch resilience: confidence-matched generator-branch rerouting, or an honest "no confirmed match"
 
-**Visual:** live screenshot of the Resilience tab's Impact Summary + Power Status cards.
+**Visual:** live screenshot of the main app's Resilience tab
+(https://silpo-b2b-resilience-production.up.railway.app/, click
+"Resilience" in the nav, Kyiv HQ office) or the Demo Office Portal
+(https://silpo-b2b-resilience-production.up.railway.app/portal/) after
+clicking "Run AI Procurement Plan" for DreamGift Atelier. Real data pulled
+live from the deployed app for this slide's narration, in case the
+screenshot isn't captured before presenting:
+  - Resilience tab (Kyiv HQ): risk badge **PREPARE**, plan generated live
+    with a real timestamp on each refresh.
+  - Portal run (DreamGift Atelier, 40 employees): activity timeline reads
+    *"Procurement Agent → знайдено 6 товар(и) через Silpo MCP (MOCK)"*,
+    *"Budget & Policy Agent → вкладається в бюджет ₴5800"*, *"Resilience
+    Planner → ризик: PREPARE"*; resulting proposal totals **₴5,694.40**
+    across 6 real (mock-catalog) line items, with the deterministic
+    explanation noting a −5 kg fruit adjustment and 3 budget trims to fit
+    the ₴5,800 weekly budget; logistics reads **"normal branch"** (Lviv
+    has no confirmed generator-branch match — reported honestly, not
+    hidden).
 
 **Speaker note:** This is the demo slide — narrate live rather than reading bullets.
 
@@ -135,6 +180,7 @@ key message, 3–5 bullets max, a suggested visual, a short speaker note.
 - Keeps a human in control of every real purchase — no autonomous checkout
 - Closes a real circular-economy loop through Silpo's existing recycling program
 - No invented statistics — every claim in this deck traces to a running feature or a documented, cited limitation
+- Try it yourself: https://silpo-b2b-resilience-production.up.railway.app/portal/
 
 **Visual:** the "problem → solution → what's real" one-liner from `HACKATHON_NARRATIVE.md`.
 
