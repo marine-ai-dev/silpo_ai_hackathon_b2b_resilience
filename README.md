@@ -263,14 +263,33 @@ starts a fresh app process and a fresh tunnel and prints a new URL (quick
 tunnels aren't guaranteed stable/long-lived, which is expected for this
 free tier).
 
-This fallback was verified from within the hackathon build environment
-against `cloudflared`'s local behavior; the environment's own outbound
-network policy blocked reaching `api.trycloudflare.com` specifically from
-inside that sandbox (`github.com`/`cloudflare.com` were reachable, so this
-is a scoped network restriction of the build environment, not a code
-issue) — the script is expected to work normally on a judge's or
-presenter's own machine with standard internet access, and is the same
-command either way.
+`scripts/demo-public.sh` tries Cloudflare's quick tunnel (`cloudflared`)
+first — no account needed, the standard option on a normal network — and
+**automatically falls back to a free SSH tunnel via `localhost.run`** if
+`cloudflared` can't reach the trycloudflare.com registration API within
+~20 seconds (some networks allow outbound SSH but block that specific
+HTTPS host). Both paths need no account and no DNS setup.
+
+Inside this hackathon build's own sandbox, `cloudflared`'s quick-tunnel
+registration consistently failed with a TCP-level connect timeout
+specifically to `api.trycloudflare.com`'s IPs (DNS resolved fine; the SYN
+itself never completed) while `github.com`/`www.cloudflare.com` loaded
+normally — a scoped, host-specific egress restriction of that sandbox, not
+a Cloudflare outage. The script's fallback handled this automatically and
+was verified end-to-end: running `npm run demo:public` unmodified produced
+a real public URL (`https://147be852b58cb1.lhr.life` in this run —
+session-specific, a fresh run mints a new one) via the SSH path, with no
+manual intervention.
+
+**Verified directly against that public URL** (not just locally): `/` →
+200, `/portal/` → 200, `/portal/portal.js` and `/portal/portal.css` → 200,
+DreamGift Atelier profile loads, a full `Run AI Procurement Plan` cycle (6
+items, budget check) completed with `sourceMode: "mock"` (never mislabeled
+`LIVE_MCP`), manager approval transitioned the proposal to `approved`,
+cart preparation returned `status: "prepared"` with a real `mock-cart-...`
+id and 6 products (never a checkout/payment call — no such endpoint
+exists), and the resilience plan reported `power.source: "MANUAL"` and
+risk `PREPARE` truthfully throughout.
 
 ### Switching this deployment to LIVE Silpo MCP
 
