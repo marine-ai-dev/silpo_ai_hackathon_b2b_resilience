@@ -259,8 +259,17 @@ something this assistant does). Once a payment method is added at
 https://railway.com/account/billing (or the workspace's own billing
 settings), `railway up` should provision normally with no code changes —
 this is a billing-account state, not an architecture or code issue.
-No existing project or service (`MyCRM`, `ai-news-assistant`) was touched
-during any of these attempts.
+No existing project or service (`MyCRM`, `ai-news-assistant`) was ever
+linked, modified, or redeployed during any of this diagnosis — both were
+confirmed unchanged (same service lists as before) via read-only API
+checks after diagnosis concluded.
+
+**This is being treated as an external account/billing blocker — no
+further Railway workaround attempts will be made.** Once the account
+owner activates billing (adds a payment method), the Silpo demo will
+deploy as its own dedicated project (`silpo-b2b-hackathon`) and service
+(`silpo-b2b-resilience`) — not reusing or nesting inside any unrelated
+existing project.
 
 ### Zero-cost public demo fallback
 
