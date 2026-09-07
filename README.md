@@ -232,15 +232,35 @@ labels itself `deterministic`, never a faked `gemini-flash` result.
 The app is designed to run as a single Railway service (`npm start`, reads
 `PORT` from the environment, serves both `/` and `/portal/` from one
 Express process — no second service needed since they're not separately
-deployable). **Railway deployment was attempted twice during the hackathon
-build and both times blocked by the same external constraint**: the
-connected Railway account's free plan has already reached its
-resource/service provisioning limit from unrelated pre-existing projects
-(`MyCRM`, `Postgres`, `ai-news-assistant`), and provisioning one more
-service requires a paid plan upgrade — an action this project will not
-take without the account owner's direct approval, and no existing
-production service was touched to free up room. Deploying to a Railway
-project with available capacity needs no code changes, only `railway up`.
+deployable).
+
+**Railway deployment has been attempted three times and blocked each time
+by the same `railway up` error** ("Free plan resource provision limit
+exceeded"). The workspace's nominal plan (`workspace.plan`, queried live
+via the Railway GraphQL API) is genuinely `HOBBY`, confirming that an
+earlier report mischaracterizing the account as Free/Trial was wrong — but
+the account's **billing customer record** has no payment method on file
+and is in an inactive/trialing billing state:
+
+```
+customer.state:                    INACTIVE
+customer.isTrialing:                true
+customer.defaultPaymentMethodId:    null
+customer.creditBalance:             5   (trial credit, not a paid subscription)
+```
+
+That is the actual root cause: Railway's provisioning backend enforces
+trial/free-tier resource limits based on **billing state**, independent
+of the plan label shown in the dashboard, whenever no payment method is
+attached. Attaching a card is a billing/financial action on the account
+owner's own Railway account — outside what this project will do without
+the owner directly completing it (entering payment details is not
+something this assistant does). Once a payment method is added at
+https://railway.com/account/billing (or the workspace's own billing
+settings), `railway up` should provision normally with no code changes —
+this is a billing-account state, not an architecture or code issue.
+No existing project or service (`MyCRM`, `ai-news-assistant`) was touched
+during any of these attempts.
 
 ### Zero-cost public demo fallback
 
