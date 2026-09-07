@@ -234,42 +234,50 @@ The app is designed to run as a single Railway service (`npm start`, reads
 Express process — no second service needed since they're not separately
 deployable).
 
-**Railway deployment has been attempted three times and blocked each time
-by the same `railway up` error** ("Free plan resource provision limit
-exceeded"). The workspace's nominal plan (`workspace.plan`, queried live
-via the Railway GraphQL API) is genuinely `HOBBY`, confirming that an
-earlier report mischaracterizing the account as Free/Trial was wrong — but
-the account's **billing customer record** has no payment method on file
-and is in an inactive/trialing billing state:
+**Deployed and verified live on Railway:**
 
-```
-customer.state:                    INACTIVE
-customer.isTrialing:                true
-customer.defaultPaymentMethodId:    null
-customer.creditBalance:             5   (trial credit, not a paid subscription)
-```
+| | |
+|---|---|
+| **Main app** | https://silpo-b2b-resilience-production.up.railway.app/ |
+| **Demo Office Portal** | https://silpo-b2b-resilience-production.up.railway.app/portal/ |
+| **Project** | `silpo-b2b-hackathon` |
+| **Service** | `silpo-b2b-resilience` (single service — same Express process serves both surfaces, per this app's own architecture) |
+| **Mode** | `SILPO_MODE=mock` (set as a Railway service variable — deterministic, no Silpo credentials required or exposed) |
+| **Gemini** | not configured (`GEMINI_API_KEY` unset) — `/api/meta/gemini-status` correctly reports `available: false`; the portal runs on its deterministic explanation fallback, exactly as designed, not blocked |
 
-That is the actual root cause: Railway's provisioning backend enforces
-trial/free-tier resource limits based on **billing state**, independent
-of the plan label shown in the dashboard, whenever no payment method is
-attached. Attaching a card is a billing/financial action on the account
-owner's own Railway account — outside what this project will do without
-the owner directly completing it (entering payment details is not
-something this assistant does). Once a payment method is added at
-https://railway.com/account/billing (or the workspace's own billing
-settings), `railway up` should provision normally with no code changes —
-this is a billing-account state, not an architecture or code issue.
-No existing project or service (`MyCRM`, `ai-news-assistant`) was ever
-linked, modified, or redeployed during any of this diagnosis — both were
-confirmed unchanged (same service lists as before) via read-only API
-checks after diagnosis concluded.
+Deployment had been blocked across several earlier attempts by a genuine
+account-billing state, root-caused via the live Railway GraphQL API rather
+than guessed from CLI error text: the workspace's nominal plan
+(`workspace.plan`) showed `HOBBY`, but the billing **customer** record had
+`state: INACTIVE`, `isTrialing: true`, `defaultPaymentMethodId: null`, and
+an empty `subscriptions: []` — meaning no subscription was actually active
+regardless of the plan label, so Railway's backend kept enforcing
+trial-tier provisioning limits. Two independent provisioning paths (a new
+project via `railway up`, and adding a service to an existing unrelated
+project) both failed identically, confirming the block was account-wide,
+not project-specific. **No existing project or service (`MyCRM`,
+`ai-news-assistant`) was ever linked, modified, or redeployed** during any
+part of this diagnosis — both were confirmed unchanged via read-only API
+checks throughout.
 
-**This is being treated as an external account/billing blocker — no
-further Railway workaround attempts will be made.** Once the account
-owner activates billing (adds a payment method), the Silpo demo will
-deploy as its own dedicated project (`silpo-b2b-hackathon`) and service
-(`silpo-b2b-resilience`) — not reusing or nesting inside any unrelated
-existing project.
+Once the account owner activated billing, a follow-up live query showed
+`state: ACTIVE`, a real `defaultPaymentMethodId`, and an `active`
+subscription — `railway up` was re-run at that point and succeeded on the
+first attempt, confirming the diagnosis was correct: this was purely a
+billing-account state, never a code, architecture, or plan-selection
+issue. The resulting project/service were renamed to the intended
+`silpo-b2b-hackathon` / `silpo-b2b-resilience` (Railway names new
+resources after the local directory by default), and a public domain was
+generated via `railway domain`.
+
+**Verified directly against the live Railway URL** (not just locally):
+`/` → 200, `/portal/` → 200, DreamGift Atelier profile loads, a full `Run
+AI Procurement Plan` cycle (6 items) completed with `sourceMode: "mock"`
+(never mislabeled `LIVE_MCP`), manager approval → `approved`, cart
+preparation → `status: "prepared"` with a real `mock-cart-...` id and 6
+products (never a checkout/payment call), the resilience plan reported
+`power.source: "MANUAL"` and risk `PREPARE` truthfully, and Railway's own
+service logs showed no errors/exceptions/fatals across the deployment.
 
 ### Zero-cost public demo fallback
 
