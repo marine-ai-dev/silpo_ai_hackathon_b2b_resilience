@@ -1,0 +1,26 @@
+final_start,final_end,source_clip,source_start,source_end,transition,description
+0.0,4.962,source-clips/01-introduction.mp4,0.402,4.964,cut (start),intro_slide1
+4.962,9.742,source-clips/01-introduction.mp4,7.404,11.784,cut,intro_slide2
+9.742,13.712,source-clips/01-introduction.mp4,14.406,17.876,cut,intro_slide3
+13.712,18.633,source-clips/01-introduction.mp4,21.408,26.329,cut,intro_slide4
+18.633,19.133,source-clips/01-introduction.mp4 -> 02-main-presentation.mp4,,,crossfade 0.5s,Transition: intro -> main page
+19.133,26.521,source-clips/02-main-presentation.mp4,0.031,7.419,cut,main_hero
+26.521,32.79,source-clips/02-main-presentation.mp4,9.033,15.302,cut,main_alerts
+32.79,39.268,source-clips/02-main-presentation.mp4,16.033,22.511,cut,main_forecast_agent
+39.268,43.6,source-clips/02-main-presentation.mp4,24.035,28.367,cut,main_budget_agent
+43.6,44.1,source-clips/02-main-presentation.mp4 -> 03-portal-demo.mp4,,,crossfade 0.5s,Transition: main page -> portal
+44.1,49.947,source-clips/03-portal-demo.mp4,0.039,5.886,cut,portal_open
+49.947,56.633,source-clips/03-portal-demo.mp4,7.04,13.726,cut,portal_power
+56.633,63.085,source-clips/03-portal-demo.mp4,18.043,24.495,cut,portal_risk
+63.085,68.726,source-clips/03-portal-demo.mp4,28.045,33.686,cut,portal_gap
+68.726,70.416,source-clips/03-portal-demo.mp4,38.046,39.736,cut,portal_trigger (silent, button click)
+70.416,76.398,source-clips/03-portal-demo.mp4,39.736,45.718,cut,portal_forecast
+76.398,83.946,source-clips/03-portal-demo.mp4,50.737,58.285,cut,portal_procurement
+83.946,91.051,source-clips/03-portal-demo.mp4,64.737,71.842,cut,portal_budget
+91.051,96.379,source-clips/03-portal-demo.mp4,75.739,81.067,cut,portal_delivery
+96.379,103.666,source-clips/03-portal-demo.mp4,84.74,92.027,cut,portal_branch
+103.666,111.685,source-clips/03-portal-demo.mp4,92.741,100.76,cut,portal_approval
+111.685,117.483,source-clips/03-portal-demo.mp4,106.741,112.539,cut,portal_esg (on main app Resilience tab)
+117.483,118.483,source-clips/03-portal-demo.mp4,117.742,118.742,cut,portal_final (silent, back on portal)
+117.1,117.6,source-clips/03-portal-demo.mp4 -> 04-closing.mp4,,,crossfade 0.5s,Transition: portal -> closing
+117.6,127.339,source-clips/04-closing.mp4,0.046,9.685,cut (end),closing_card
